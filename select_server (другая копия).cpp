@@ -14,26 +14,17 @@
 #include <poll.h>
 #include <sstream>
 
-#define PORT    8080
+#define PORT    5555
 #define BUFLEN  4096
 
 int readFromClientHTTP(int fd, char *buf){
     int nbytes;
 
-    nbytes = recv(fd, buf, BUFLEN, 0);
-    if (nbytes < 0){
-        std::cout << "reading error" << std::endl;
+    nbytes = read(fd, buf, BUFLEN);
+    if (nbytes <= 0)
         return -1;
-    }
-    else if (nbytes == 0){
-        std::cout << "reading no data" << std::endl;
-        return -1;
-    }
-    else {
-        for (size_t i = 0; i < nbytes; i++){
-            std::cout << buf[i];
-        }        
-    }
+    else
+        std::cout << "Server got http request: " << buf << std::endl;
     return 0;
 }
 
@@ -75,8 +66,8 @@ int writeToClientHTTP(int fd, char *buf){
     }
 
     nbytes = send(fd, http.str().c_str(), http.str().length() + 1, 0);
-    if (nbytes < 0)
-        ret = -1;
+    // if (nbytes < 0)
+    //     ret = -1;
     std::cout << "Write ret = " << ret << std::endl;
     return ret;
 }
@@ -135,28 +126,23 @@ int main(){
                 {
                     std::cout << "Socket = " << i << std::endl;
                     err = readFromClientHTTP(i, buf);
-                    std::cout << "read ret  = " << err << std::endl;
                     if (err < 0){
                         close(i);
                         FD_CLR(i, &active_set);
-                        std::cout << "Close socket read = " << i << std::endl;
+                        std::cout << "Close socket = " << i << std::endl;
                     }
 
                     std::cout << "Write to client" << std::endl;
-                    if (writeToClientHTTP(i, buf) < 0){
-                        close(i);
-                        FD_CLR(i, &active_set);
-                        std::cout << "Close socket write = " << i << std::endl;
-                    };
+                    writeToClientHTTP(i, buf);
                 }
             }
         }     
     } 
-    for (size_t i = 0; i < FD_SETSIZE; i++){
-        if (FD_ISSET(i, &read_set))
-            close(i);
-    }
-    return 0;
+    // for (size_t i = 0; i < FD_SETSIZE; i++){
+    //     if (FD_ISSET(i, &read_set))
+    //         close(i);
+    // }
+    // return 0;
 }
 
 //g++ select_server.cpp -o server
