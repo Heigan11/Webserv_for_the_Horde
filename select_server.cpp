@@ -30,9 +30,12 @@ int readFromClientHTTP(int fd, char *buf){
         return -1;
     }
     else {
+        std::cout << "Содержимое http-запроса:" << std::endl;
+        std::cout << "========================" << std::endl << std::endl; 
         for (size_t i = 0; i < nbytes; i++){
             std::cout << buf[i];
-        }        
+        }
+        std::cout << "========================" << std::endl;        
     }
     return 0;
 }
@@ -42,28 +45,29 @@ int writeToClientHTTP(int fd, char *buf){
     int ret;
 
     std::stringstream http;
-    std::stringstream html;
 
     char *p = strstr(buf, "index.html");
 
     if (p && p - buf < 20){
-        html << "<!DOCTYPE html>\r\n";
-        html << "<html>\r\n";
-        html << "<head>\r\n";
-        html << "<meta charset = \"cp1251\">\r\n";
-        html << "<title>Ecole server</title>\r\n";
-        html << "<head>\r\n";
-        html << "<body>\r\n";
-        html << "<h2>For The Horde!</h2>\r\n";
-        html << "<body>\r\n";
-        html << "<html>\r\n";
 
         http << "HTTP/1.1 200 OK\r\n";
         http << "Connection: keep-alive\r\n";
         http << "Content-type: text/html\r\n";
-        http << "Content-length: " << html.str().length() << "\r\n";
+
+        size_t lenght;
+        std::stringstream buffer;
+        char buf1[BUFLEN];
+        int fd1 = open("./response.txt", O_RDONLY);
+        std::cout << "fd1 = " << fd1 << std::endl;
+        while (lenght = read(fd1, buf1, BUFLEN) > 0){
+            buffer << buf1;
+        }
+        close(fd1);
+
+        http << "Content-length: " << buffer.str().length() << "\r\n";
         http << "\r\n";
-        http << html.str();
+        http << buffer.str();
+
         ret = 0;
     } else {
         http << "HTTP/1.1 404 Not found\r\n";
