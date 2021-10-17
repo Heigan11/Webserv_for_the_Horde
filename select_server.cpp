@@ -46,16 +46,25 @@ int writeToClientHTTP(int fd, char *buf){
     int ret;
 
     std::stringstream http;
+    std::string path;
 
     char *p = strstr(buf, "index.html");
+    char *b = strstr(buf, "form.html");
+    char *l = strstr(buf, "=Lion");
 
-    if (p && p - buf < 20){
+    if (p && p - buf < 20 || b || l){
 
         http << "HTTP/1.1 200 OK\r\n";
         http << "Connection: keep-alive\r\n";
         http << "Content-type: text/html\r\n";
 
-        std::ifstream file ("index.txt");
+        if (p)
+            path = "index.txt";
+        else if (b)
+            path = "form.txt";
+        else if (l)
+            path = "lion.txt";
+        std::ifstream file (path);
         if (!file) {
             std::cerr << "file was not open" << std::endl; 
             return -1;
@@ -82,7 +91,7 @@ int writeToClientHTTP(int fd, char *buf){
     nbytes = send(fd, http.str().c_str(), http.str().length() + 1, 0);
     if (nbytes < 0)
         ret = -1;
-    std::cout << "Write ret = " << ret << std::endl;
+    std::cout << "Write nbytes = " << nbytes << std::endl;
     return ret;
 }
 
@@ -91,6 +100,7 @@ int writeToClientHTTPForm(int fd, char *buf){
 }
 
 int main(){
+    setlocale(LC_ALL, "rus");
 
     int sock;
     int newsock;
