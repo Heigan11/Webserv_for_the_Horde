@@ -13,6 +13,7 @@
 #include <sys/time.h>
 #include <poll.h>
 #include <sstream>
+#include <fstream>
 
 #define PORT    8080
 #define BUFLEN  4096
@@ -54,19 +55,19 @@ int writeToClientHTTP(int fd, char *buf){
         http << "Connection: keep-alive\r\n";
         http << "Content-type: text/html\r\n";
 
-        size_t lenght;
-        std::stringstream buffer;
-        char buf1[BUFLEN];
-        int fd1 = open("./response.txt", O_RDONLY);
-        std::cout << "fd1 = " << fd1 << std::endl;
-        while (lenght = read(fd1, buf1, BUFLEN) > 0){
-            buffer << buf1;
+        std::ifstream file ("index.txt");
+        if (!file) {
+            std::cerr << "file was not open" << std::endl; 
+            return -1;
         }
-        close(fd1);
+        std::string line;
+	    std::string res;
+	    while (std::getline(file, line))
+		    res += line;
 
-        http << "Content-length: " << buffer.str().length() << "\r\n";
+        http << "Content-length: " << res.length() << "\r\n";
         http << "\r\n";
-        http << buffer.str();
+        http << res;
 
         ret = 0;
     } else {
