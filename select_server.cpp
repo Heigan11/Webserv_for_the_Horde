@@ -14,6 +14,7 @@
 #include <poll.h>
 #include <sstream>
 #include <fstream>
+#include <sys/wait.h>
 
 #define PORT    8080
 #define BUFLEN  4096
@@ -41,7 +42,33 @@ int readFromClientHTTP(int fd, char *buf){
     return 0;
 }
 
-int writeToClientHTTP(int fd, char *buf){
+void cgiCall(char **env)
+{
+    pid_t	pid;
+    int     status;
+    //ToDo положить в ENV запрос нормально
+    char    *argv[10] = { "/bin/sh", "cgi.sh", NULL };
+    char    *lion = "SIGN=Lion";
+    env[0] = lion;
+
+    pid = fork();
+
+    if (pid < 0)
+        exit(-1);
+
+    else if (pid == 0){
+        if (execve("/bin/sh", argv, env) < 0){
+            std::cerr << "execute error" << std::endl;
+            exit(-1);
+        }
+        // execve("test", NULL, NULL);
+        exit(0);
+    }
+    else
+        waitpid(pid, &status, 0);
+}
+
+int writeToClientHTTP(int fd, char *buf, char **env){
     int nbytes;
     int ret;
 
@@ -50,9 +77,14 @@ int writeToClientHTTP(int fd, char *buf){
 
     char *p = strstr(buf, "index.html");
     char *b = strstr(buf, "form.html");
-    char *l = strstr(buf, "=Lion");
+    if (strstr(buf, "=Lion")){
+        std::cerr << "FORK" << std::endl;
+        cgiCall(env);
+        return -1;
+    }
 
-    if (p && p - buf < 20 || b || l){
+
+    if (p && p - buf < 20 || b){
 
         http << "HTTP/1.1 200 OK\r\n";
         http << "Connection: keep-alive\r\n";
@@ -62,8 +94,6 @@ int writeToClientHTTP(int fd, char *buf){
             path = "index.txt";
         else if (b)
             path = "form.txt";
-        else if (l)
-            path = "lion.txt";
         std::ifstream file (path);
         if (!file) {
             std::cerr << "file was not open" << std::endl; 
@@ -99,7 +129,7 @@ int writeToClientHTTPForm(int fd, char *buf){
     return 0;
 }
 
-int main(){
+int main(int ac, char **av, char **env){
     setlocale(LC_ALL, "rus");
 
     int sock;
@@ -158,7 +188,7 @@ int main(){
                     }
 
                     std::cout << "Write to client" << std::endl;
-                    if (writeToClientHTTP(i, buf) < 0){
+                    if (writeToClientHTTP(i, buf, env) < 0){
                         close(i);
                         FD_CLR(i, &active_set);
                         std::cout << "Close socket write = " << i << std::endl;

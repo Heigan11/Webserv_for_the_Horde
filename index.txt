@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset = \"cp1251\">
+<title>Ecole server</title>
+<head>
+<body>
+<h2>For The Aliance!</h2>
+<body>
+<html>

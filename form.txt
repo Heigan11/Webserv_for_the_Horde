@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset = \"cp1251\">
+	<title>Ecole server</title>
+<head>
+<body>
+	<h2>For The Horde!</h2>
+	<form name = "myform" action="http://localhost:8080" method="get">
+		<input name="ram" type="submit" value="Ram">
+		<input name="bull" type="submit" value="Bull">
+		<input name="twins" type="submit" value="Twins">
+		<br>
+		<input name="crab" type="submit" value="Crab">
+		<input name="lion" type="submit" value="Lion">
+		<input name="maiden" type="submit" value="Maiden">
+	</form>
+<body>
+<html>
