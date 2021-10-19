@@ -48,8 +48,8 @@ void cgiCall(char **env)
     int     status;
     //ToDo положить в ENV запрос нормально
     char    *argv[10] = { "/bin/sh", "cgi.sh", NULL };
-    char    *lion = "SIGN=Lion";
-    env[0] = lion;
+    // char    *lion = "SIGN=Lion";
+    // env[0] = lion;
 
     pid = fork();
 
@@ -61,11 +61,34 @@ void cgiCall(char **env)
             std::cerr << "execute error" << std::endl;
             exit(-1);
         }
-        // execve("test", NULL, NULL);
         exit(0);
     }
     else
         waitpid(pid, &status, 0);
+}
+
+void send_to_fd(int fd){
+    std::stringstream http;
+
+    http << "HTTP/1.1 200 OK\r\n";
+    http << "Connection: keep-alive\r\n";
+    http << "Content-type: text/html\r\n";
+
+    std::ifstream file ("lion.txt");
+    if (!file) {
+        std::cerr << "file was not open" << std::endl; 
+        return;
+    }
+    std::string line;
+	std::string res;
+	while (std::getline(file, line))
+		res += line;
+
+    http << "Content-length: " << res.length() << "\r\n";
+    http << "\r\n";
+    http << res;
+
+    send(fd, http.str().c_str(), http.str().length() + 1, 0);
 }
 
 int writeToClientHTTP(int fd, char *buf, char **env){
@@ -79,7 +102,30 @@ int writeToClientHTTP(int fd, char *buf, char **env){
     char *b = strstr(buf, "form.html");
     if (strstr(buf, "=Lion")){
         std::cerr << "FORK" << std::endl;
+        //ToDo положить в ENV fd
+        // char *req = "REQEST=";
+        *strchr(buf, '\n') = '\0';
+        // std::string req_1 = strchr(buf, '/');
+        std::string req_1 = buf;
+        std::string req = "REQUEST=" + req_1;
+        char *cstr = new char[req.length() + 1];
+        strcpy(cstr, req.c_str());
+
+        env[0] = cstr;
+
+        std::string req_2 = "FD=" + std::to_string(fd);
+        char *cstr_1 = new char[req_2.length() + 1];
+        strcpy(cstr_1, req_2.c_str());
+
+        // std::cerr << cstr_1 << std::endl;
+
+        env[1] = cstr_1;
+
+        //send_to_fd(fd);
+
         cgiCall(env);
+        delete [] cstr;
+        delete [] cstr_1;
         return -1;
     }
 
