@@ -57,7 +57,8 @@ void cgiCall(char **env)
         exit(-1);
 
     else if (pid == 0){
-        if (execve("/bin/sh", argv, env) < 0){
+        // if (execve("/bin/sh", argv, env) < 0){
+        if (execve("cgi", argv, env) < 0){
             std::cerr << "execute error" << std::endl;
             exit(-1);
         }
