@@ -58,7 +58,7 @@ int main(int ac, char **av, char **env){
     http << "\r\n";
     http << html.str();
 
-    send(fd, http.str().c_str(), http.str().length() + 1, 0);
+    send(1, http.str().c_str(), http.str().length() + 1, 0);
 }
 
 //g++ cgi.cpp -o cgi

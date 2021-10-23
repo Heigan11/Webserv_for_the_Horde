@@ -19,6 +19,10 @@
 #define PORT    8080
 #define BUFLEN  4096
 
+#define STDIN		0
+#define STDOUT		1
+#define STDERR		2
+
 int readFromClientHTTP(int fd, char *buf){
     int nbytes;
 
@@ -42,14 +46,12 @@ int readFromClientHTTP(int fd, char *buf){
     return 0;
 }
 
-void cgiCall(char **env)
+void cgiCall(char **env, int fd)
 {
     pid_t	pid;
     int     status;
     //ToDo положить в ENV запрос нормально
     char    *argv[10] = { "/bin/sh", "cgi.sh", NULL };
-    // char    *lion = "SIGN=Lion";
-    // env[0] = lion;
 
     pid = fork();
 
@@ -57,8 +59,10 @@ void cgiCall(char **env)
         exit(-1);
 
     else if (pid == 0){
-        // if (execve("/bin/sh", argv, env) < 0){
-        if (execve("cgi", argv, env) < 0){
+        dup2(fd, STDOUT);
+        dup2(fd, STDIN);
+        // if (execve("cgi", argv, env) < 0){
+        if (execve("/bin/sh", argv, env) < 0){
             std::cerr << "execute error" << std::endl;
             exit(-1);
         }
@@ -101,7 +105,7 @@ int writeToClientHTTP(int fd, char *buf, char **env){
 
     char *p = strstr(buf, "index.html");
     char *b = strstr(buf, "form.html");
-    if (strstr(buf, "=Lion")){
+    if (strstr(buf, "form.html")){
         std::cerr << "FORK" << std::endl;
         //ToDo положить в ENV fd
         // char *req = "REQEST=";
@@ -124,7 +128,7 @@ int writeToClientHTTP(int fd, char *buf, char **env){
 
         //send_to_fd(fd);
 
-        cgiCall(env);
+        cgiCall(env, fd);
         delete [] cstr;
         delete [] cstr_1;
         return -1;
