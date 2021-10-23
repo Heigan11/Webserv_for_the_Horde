@@ -58,14 +58,14 @@ void cgiCall(char **env, int fd)
     if (pid < 0)
         exit(-1);
 
-    else if (pid == 0){
+    else if (pid == 0){  
+
         dup2(fd, STDOUT);
-        dup2(fd, STDIN);
-        // if (execve("cgi", argv, env) < 0){
-        if (execve("/bin/sh", argv, env) < 0){
+        if (execve("cgi", argv, env) < 0){
+        // if (execve("/bin/sh", argv, env) < 0){
             std::cerr << "execute error" << std::endl;
             exit(-1);
-        }
+        }      
         exit(0);
     }
     else
@@ -107,9 +107,7 @@ int writeToClientHTTP(int fd, char *buf, char **env){
     if (strstr(buf, "form.html")){
         std::cerr << "FORK" << std::endl;
         //ToDo положить в ENV fd
-        // char *req = "REQEST=";
         *strchr(buf, '\n') = '\0';
-        // std::string req_1 = strchr(buf, '/');
         std::string req_1 = buf;
         std::string req = "REQUEST=" + req_1;
         char *cstr = new char[req.length() + 1];
@@ -120,8 +118,6 @@ int writeToClientHTTP(int fd, char *buf, char **env){
         std::string req_2 = "FD=" + std::to_string(fd);
         char *cstr_1 = new char[req_2.length() + 1];
         strcpy(cstr_1, req_2.c_str());
-
-        // std::cerr << cstr_1 << std::endl;
 
         env[1] = cstr_1;
 
