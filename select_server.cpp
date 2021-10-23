@@ -104,7 +104,6 @@ int writeToClientHTTP(int fd, char *buf, char **env){
     std::string path;
 
     char *p = strstr(buf, "index.html");
-    char *b = strstr(buf, "form.html");
     if (strstr(buf, "form.html")){
         std::cerr << "FORK" << std::endl;
         //ToDo положить в ENV fd
@@ -135,16 +134,13 @@ int writeToClientHTTP(int fd, char *buf, char **env){
     }
 
 
-    if (p && p - buf < 20 || b){
+    if (p && p - buf < 20){
 
         http << "HTTP/1.1 200 OK\r\n";
         http << "Connection: keep-alive\r\n";
         http << "Content-type: text/html\r\n";
 
-        if (p)
-            path = "index.txt";
-        else if (b)
-            path = "form.txt";
+        path = "index.txt";
         std::ifstream file (path);
         if (!file) {
             std::cerr << "file was not open" << std::endl; 
