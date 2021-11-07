@@ -61,8 +61,8 @@ void cgiCall(char **env, int fd)
     else if (pid == 0){  
 
         dup2(fd, STDOUT);
-        if (execve("cgi", argv, env) < 0){
-        // if (execve("/bin/sh", argv, env) < 0){
+        //if (execve("cgi", argv, env) < 0){
+        if (execve("/bin/sh", argv, env) < 0){
             std::cerr << "execute error" << std::endl;
             exit(-1);
         }      
