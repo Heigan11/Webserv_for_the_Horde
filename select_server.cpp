@@ -102,11 +102,17 @@ int writeToClientHTTP(int fd, char *buf, char **env){
 
     std::stringstream http;
     std::string path;
+    std::string body;
 
-    char *p = strstr(buf, "index.html");
-    if (strstr(buf, "form.html")){
+    char *p = strstr(buf, "index");
+    if (strstr(buf, "horoscope")){
         std::cerr << "FORK" << std::endl;
-        //ToDo положить в ENV fd
+        if (strstr(buf, "POST")){
+            body = strrchr(buf, '\n') + 1;
+            char *cstr_2 = new char[body.length() + 1];
+            strcpy(cstr_2, body.c_str());
+            env[2] = cstr_2;
+        }
         *strchr(buf, '\n') = '\0';
         std::string req_1 = buf;
         std::string req = "REQUEST=" + req_1;
