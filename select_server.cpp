@@ -46,22 +46,30 @@ int readFromClientHTTP(int fd, char *buf){
     return 0;
 }
 
-void cgiCall(char **env, int fd)
+// char **getCgiEnv(){
+//     char **env = 
+// }
+
+void cgiCall(char **env, int fd, char *body)
 {
     pid_t	pid;
     int     status;
-    //ToDo положить в ENV запрос нормально
+    int     reqFd;
+
     char    *argv[10] = { "/bin/sh", "cgi.sh", NULL };
+
 
     pid = fork();
 
     if (pid < 0)
         exit(-1);
 
-    else if (pid == 0){  
+    else if (pid == 0){ 
 
+        reqFd = open("./html/req_body_tmp.txt", O_RDWR, O_CREAT, O_TRUNC);
+        write(reqFd, body, strlen(body)); 
+        dup2(reqFd, STDIN);
         dup2(fd, STDOUT);
-        //if (execve("cgi", argv, env) < 0){
         if (execve("/bin/sh", argv, env) < 0){
             std::cerr << "execute error" << std::endl;
             exit(-1);
@@ -112,6 +120,7 @@ int writeToClientHTTP(int fd, char *buf, char **env){
             char *cstr_2 = new char[body.length() + 1];
             strcpy(cstr_2, body.c_str());
             env[2] = cstr_2;
+            // std::cerr << cstr_2 << std::endl;
         }
         *strchr(buf, '\n') = '\0';
         std::string req_1 = buf;
@@ -129,7 +138,7 @@ int writeToClientHTTP(int fd, char *buf, char **env){
 
         //send_to_fd(fd);
 
-        cgiCall(env, fd);
+        cgiCall(env, fd, env[2]);
         delete [] cstr;
         delete [] cstr_1;
         return -1;
@@ -186,6 +195,8 @@ int main(int ac, char **av, char **env){
     char buf[BUFLEN];
     socklen_t size;
     int err;
+
+    std::ofstream out("./html/req_body_tmp.txt");
 
     std::cout << "Server ready" << std::endl;
 
