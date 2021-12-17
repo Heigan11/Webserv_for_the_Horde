@@ -55,8 +55,8 @@ void cgiCall(char **env, int fd, char *body)
     pid_t	pid;
     int     status;
     int     reqFd;
-    char    *argv[10] = { "/bin/sh", "cgi.sh", NULL }; 
-
+    char    *argv[10] = { "/bin/sh", "cgi.sh", NULL };
+ 
     pid = fork();
 
     if (pid < 0)
@@ -108,6 +108,7 @@ void send_to_fd(int fd){
 int writeToClientHTTP(int fd, char *buf, char **env){
     int nbytes;
     int ret;
+    char *cstr_2;
 
     std::stringstream http;
     std::string path;
@@ -118,33 +119,20 @@ int writeToClientHTTP(int fd, char *buf, char **env){
         std::cerr << "FORK" << std::endl;
         if (strstr(buf, "POST")){
             body = strrchr(buf, '\n') + 1;
-            char *cstr_2 = new char[body.length() + 1];
+            cstr_2 = new char[body.length() + 1];
             strcpy(cstr_2, body.c_str());
-            env[2] = cstr_2;
-            std::cerr << "cstr_2 = " << cstr_2 << std::endl;
         }
         *strchr(buf, '\n') = '\0';
         std::string req_1 = buf;
         std::string req = "REQUEST=" + req_1;
         char *cstr = new char[req.length() + 1];
         strcpy(cstr, req.c_str());
-
         env[0] = cstr;
 
-        std::string req_2 = "FD=" + std::to_string(fd);
-        char *cstr_1 = new char[req_2.length() + 1];
-        strcpy(cstr_1, req_2.c_str());
-
-        env[1] = cstr_1;
-
-        //send_to_fd(fd);
-
-        cgiCall(env, fd, env[2]);
+        cgiCall(env, fd, cstr_2);
         delete [] cstr;
-        delete [] cstr_1;
         return -1;
     }
-
 
     if (p && p - buf < 20){
 
