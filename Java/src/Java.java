@@ -1,9 +1,6 @@
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -144,7 +141,6 @@ public class Java {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
 //        if (env.containsKey("AQUARIUS"))
 //            responseToBrowser("aquarius");
