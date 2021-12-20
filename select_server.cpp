@@ -108,7 +108,6 @@ void send_to_fd(int fd){
 int writeToClientHTTP(int fd, char *buf, char **env){
     int nbytes;
     int ret;
-    char *cstr_2;
 
     std::stringstream http;
     std::string path;
@@ -118,9 +117,17 @@ int writeToClientHTTP(int fd, char *buf, char **env){
     if (strstr(buf, "horoscope")){
         std::cerr << "FORK" << std::endl;
         if (strstr(buf, "POST")){
+            std::cerr << ">>>>>>>>>>>buf>>>>>>>>>>>>>" << std::endl;
+            std::cerr << buf << std::endl;
+            std::cerr << "<<<<<<<<<<<buf<<<<<<<<<<<<<" << std::endl;
             body = strrchr(buf, '\n') + 1;
-            cstr_2 = new char[body.length() + 1];
-            strcpy(cstr_2, body.c_str());
+            if (body.empty()){
+                *strrchr(buf, '\n') = ' ';
+                body = strrchr(buf, '\n') + 1;
+            }
+            std::cerr << ">>>>>>>>>>>body>>>>>>>>>>>>>" << std::endl;
+            std::cerr << body << std::endl;
+            std::cerr << "<<<<<<<<<<<body<<<<<<<<<<<<<" << std::endl;
         }
         *strchr(buf, '\n') = '\0';
         std::string req_1 = buf;
@@ -129,7 +136,14 @@ int writeToClientHTTP(int fd, char *buf, char **env){
         strcpy(cstr, req.c_str());
         env[0] = cstr;
 
-        cgiCall(env, fd, cstr_2);
+        if (!body.empty()){
+            char *cstr_2 = new char[body.length() + 1];
+            strcpy(cstr_2, body.c_str());
+            cgiCall(env, fd, cstr_2);
+            delete [] cstr_2;
+        } else {
+            cgiCall(env, fd, "");
+        }
         delete [] cstr;
         return -1;
     }
